@@ -1,12 +1,7 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
 iiiiii
 222222
 iiiiii
-=======
-=======
 o
 
->>>>>>> 0e52660... 提交
 wwwiiiiii
->>>>>>> 0f70d7c... add c.txt actually
+wwwiiiiii
