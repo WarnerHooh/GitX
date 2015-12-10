@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 iiiiii
 222222
 iiiiii
@@ -13,4 +14,6 @@ o
 
 wwwiiiiii
 222222
+o
+
 wwwiiiiii
