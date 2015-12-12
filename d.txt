@@ -1,0 +1,316 @@
+
+登录 | 注册
+业界
+移动开发
+云计算
+软件研发
+程序员
+极客头条
+专题
+编程语言开放平台HTML5前端开发开源架构智能算法数据库
+
+
+ 
+订阅软件研发RSS CSDN首页> 软件研发
+12个git实战建议和技巧
+发表于2012-12-11 09:36| 13021次阅读| 来源CSDN| 17 条评论| 作者王然
+git版本控制工具
+摘要：git无疑是现在最热门的版本控制工具，而且正在进一步侵占SVN以及CVS的市场。本文作者从国外技术问答社区Stack Overflow整理的12个很实用的git使用技巧和建议，希望对你有帮助。
+1.使用“git diff”来折叠多行
+
+用git diff经常会出现很多内容，导致很多内容被遮住了，让人很是苦恼，幸运的是这里有个解决方案。
+
+如果你使用less作为默认的pager，只需要输入-s，就可以保证不会被diff刷屏了。
+
+或者，你也可以使用git config设置pager来达到同样的效果：
+
+为当前项目设置pager：
+
+$ git config core.pager 'less -r'  
+再将pager设置的作用域设置为整个项目：
+
+$ git config --global core.pager 'less -r'  
+2.设置全局代理
+
+在某些网络环境下，你可能需要为git配置代理，这很简单，只需要一行命令就可以了：
+
+git config --global https.proxy https://user:password@address:port 
+3.clone某个特定分支
+
+在某些大型项目中，或者只是图方便，有时候你可能只希望clone某个分支，你可以这样做：
+
+mkdir $BRANCH 
+cd $BRANCH 
+git init 
+git remote add -t $BRANCH -f origin $REMOTE_REPO 
+git checkout $BRANCH 
+4.比较某个文件和远程分支上的区别
+
+很简单：
+
+git diff localbranch remotebranch filepath 
+5.列出版本库中所有已删除的文件
+
+也许你是想将其恢复，因此需要仔细确认某些merge操作，无论如何，列出版本库中所有已删除的文件会非常有帮助。你只需要这样做：
+
+git log --diff-filter=D --summary 
+如果你想将其恢复，参照这里。
+
+如果你不想知道是哪次commit中删除的,只需要添加一个grep delete。
+
+git log --diff-filter=D --summary | grep delete 
+6.在版本库所有版本中搜寻一条字符串
+
+往往你想要查找某段代码、某个函数、一个常量、一个文件，但是却找不到了。它被删除了，什么时候删除的？这个小技巧能搜索整个版本库中git diff信息，可能会花些时间，但是非常有用：
+
+git rev-list --all | ( 
+    while read revision; do 
+        git grep -F 'Your search string' $revision 
+    done 
+) 
+7.应用另外一个（不相关的）本地版本库中的patch
+
+从另一个版本库中cherry-pick一条提交记录，首先需要将那个版本库作为一个远程版本库添加进来，并fetch其变化，然后cherry-pick其提交记录。
+
+如果你追求速度，也可以使用这个未经优化的命令：
+
+git --git-dir=../some_other_repo/.git format-patch -k -1 --stdout 
+<
+commit SHA
+>
+| git am -3 -k 
+8.从新的主干中分出一个新分支
+
+有时候你会在better_brach上工作一段时间，并准备将其设为新的master，你会怎么做？
+
+这里是Stack Overflow上提供的常规解决方案：
+
+1.切换到better_brach分支：
+
+git checkout better_branch 
+2.保留better_branch分支全部内容，但是记录合并：
+
+git merge --strategy=ours master 
+3.切回mater
+
+git checkout master 
+4.快速合并
+
+git merge better_branch 
+5.如果你想让合并步骤变得更清晰，可以添加commit信息。只需要修改下第二步：
+
+git merge --strategy=ours --no-commit master 
+git commit # Here add your custom message to the commit template 
+9.向分支提交一个初始的空commit，保证完全复位
+
+这样会重写历史记录，所以只能在未和任何人分享前做，否则将可能把同事者的文件破坏。
+
+1.创建一个新的空分支，例如：newroot
+
+git checkout --orphan newroot 
+git rm --cached -r . 
+git clean -f -d 
+2.创建空的commit
+
+git commit --allow-empty -m '[empty] initial commit' 
+3.重新发送分支的全部内容
+
+git rebase --onto newroot --root master 
+4.删除临时分支newroot
+
+git branch -d newroot 
+现在master就已经包含了一个空的root commit了。
+
+10.清空一个分支来做些不同的事
+
+有时候你会想要从某个分支重新开始，或者打算保留一些逻辑上和主干相关但是跟踪另一个跨职能方面的代码，就像GitHub项目的gh-pages。
+
+但如果你只想重新开始某个分支，清空所有历史记录呢？
+
+1.检出（checkout）一个分支：
+
+git checkout -b branch_to_zero 
+2.跟上条一样，先建立增加一个初始的空commit，之后就可以通过重新设置来清空一个分支。
+
+3.使用hard重置分支到刚刚创建的初始commit：
+
+git reset --hard initial_commit 
+11.如何修改一个特定的commit？
+
+当你想在推送前重做你最后的commit时，可以使用修改命令（git commit --amend）。如果你想修改的不是最后一个commit呢？
+
+这种情况下，你可以使用git rebase，例如，你想要修改bbc643cd commit，运行下面的命令：
+
+$git rebase bbc643cd^ --interactive  
+在默认的编辑器中选择并修改你期望修改的，然后保存修改并输入：
+
+$ git add 
+<
+filepattern
+>
+  
+现在你就可以使用
+
+$git commit --amend 
+来修改commit，之后使用
+
+$ git rebase --continue  
+返回之前最新的commit。
+
+12.如何隐藏多个已修改文件中一个？
+
+git stash --keep-index命令可以用来隐藏上次commit中没有add的东西，之后add想要提交的文件并运行相应命令就可以了。
+
+按照下面的提示，你可以把一条老的commit提交到多个变更集中：
+
+互动地rebase最后一条好的commit：
+
+git rebase -i last_good_commit 
+将某些变化标记为edit：
+
+git reset HEAD^ 
+git add file1 file2 file3 
+添加相应的文件：
+
+git add file1 file2 file3 
+因此之前没有添加的文件：
+
+git stash --keep-index 
+别忘了收尾：
+
+git commit 
+git stash pop 
+有必要的话，重复第二步之后的步骤：
+
+git rebase --continue 
+原文链接：durdn.com
+
+顶
+19
+ 
+踩
+0
+ 
+推荐阅读相关主题： 解决方案 stack overflow 编辑器 合并 filter 历史
+相关文章最新报道
+Git远程操作详解源代码管理十诫避免选择错误开发工具的10个技巧GitLab获400万美元A轮融资，GitLab 8.0将很快到来libgit2：纯C语言实现的Git开发包Realms：采用Git作为版本管理的Wiki系统
+已有17条评论
+
+还可以再输入500个字
+
+
+有什么感想，你也来说说吧！
+ 发表评论您还没有登录! 请 登录 或 注册
+最新评论最热评论
+
+syw19901001 2014-12-03 21:49
+Git版本控制软件结合GitHub从入门到精通常用命令学习手册
+http://www.ihref.com/read-16369.html
+   回复
+
+麦子WJ 2014-07-29 10:51
+mark
+   回复
+
+韩大卫 2014-05-15 09:57
+非常实用！
+   回复
+
+xinfuqizao 2014-03-13 12:56
+cherry-pick gerrit 上的提交到另一个分支 http://springnap.vicp.cc:8088/roller/blog/entry/cherry_pick_gerrit
+   回复
+
+evilgod528 2013-10-19 17:26
+mark
+   回复
+
+你佛 2013-07-17 16:12
+不错， 顶一下
+   回复
+
+睡觉不盖被 2013-01-05 17:27
+mark一下
+   回复
+
+rxue17 2012-12-12 22:25
+收了~！
+   回复
+
+白一梓 2012-12-12 21:07
+好复杂
+   回复
+
+alleon 2012-12-12 18:34 来自 新浪微博
+[挤眼]
+   回复
+
+Kevin_Taylor 2012-12-12 16:26
+不错,很多实用的技巧!
+   回复
+
+dzl84394 2012-12-12 10:47
+自己用，或者大型项目用都很好，就是小项目十几个人用的时候感觉坑爹
+   回复
+
+nicksong7 2012-12-12 08:23
+好东西，值得学习！
+   回复
+
+bafn_J 2012-12-12 07:51
+不错
+   回复
+
+gore 2012-12-11 23:49
+虽然有命令，但还是习惯图形界面
+   回复
+
+me2602380441 2012-12-11 23:13
+唉，完全看不懂
+   回复
+
+ileson 2012-12-11 17:22
+command还是不太习惯
+1票，来自d304240244    回复
+共1页 首页  上一页 1 下一页  末页
+请您注意
+·自觉遵守：爱国、守法、自律、真实、文明的原则
+·尊重网上道德，遵守《全国人大常委会关于维护互联网安全的决定》及中华人民共和国其他各项有关法律法规
+·严禁发表危害国家安全，破坏民族团结、国家宗教政策和社会稳定，含侮辱、诽谤、教唆、淫秽等内容的作品
+·承担一切因您的行为而直接或间接导致的民事或刑事法律责任
+·您在CSDN新闻评论发表的作品，CSDN有权在网站内保留、转载、引用或者删除
+·参与本评论即表明您已经阅读并接受上述条款
+
+CSDN官方微信
+扫描二维码,向CSDN吐槽
+微信号：CSDNnews
+
+程序员移动端订阅下载
+每日资讯快速浏览
+微博关注
+
+
+
+相关热门文章
+
+TIOBE 2015年12月编程语言排行榜：Java正处巅峰
+架构之路（六）：把框架拉出来
+如何在Swift中使用LLVM API？
+如何使用HBase构建NewSQL？
+Rust 1.5来了
+SDCC 2015数据库实战论坛观感
+热门标签
+
+HadoopAWS移动游戏JavaAndroidiOSSwift智能硬件DockerOpenStackVPNSparkERPIE10EclipseCRMJavaScript数据库UbuntuNFCWAP
+下载专辑
+
+Java开发多媒体服务器常用的六个JAR包
+jQuery JavaScript 经典操作实例
+Swift 初级教程汇总：Swift基础
+18本中文版敏捷开发书籍收集
+Android 自定义控件、开源库
+
+公司简介|招贤纳士|广告服务|银行汇款帐号|联系方式|版权声明|法律顾问|问题报告|合作伙伴|论坛反馈
+网站客服杂志客服微博客服webmaster@csdn.net400-600-2320|北京创新乐知信息技术有限公司 版权所有|江苏乐知网络技术有限公司 提供商务支持
+京 ICP 证 09002463 号|Copyright © 1999-2015, CSDN.NET, All Rights Reserved GongshangLogo
+关闭
+
