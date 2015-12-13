@@ -167,7 +167,7 @@ git stash --keep-index命令可以用来隐藏上次commit中没有add的东西�
 互动地rebase最后一条好的commit：
 
 git rebase -i last_good_commit 
->>>>>>> master
+
 将某些变化标记为edit：
 
 git reset HEAD^ 
